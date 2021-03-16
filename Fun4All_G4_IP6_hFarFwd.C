@@ -33,8 +33,8 @@ R__LOAD_LIBRARY(libCompton.so)
 
 void defineDetectors(PHG4Reco*,int);
 
-bool verbose = true;
-//bool verbose = false;
+//bool verbose = true;
+bool verbose = false;
 
 void Fun4All_G4_IP6_hFarFwd(
 			    int nEvents = -1, 
@@ -57,9 +57,9 @@ void Fun4All_G4_IP6_hFarFwd(
   recoConsts *rc = recoConsts::instance();
 
   PHG4ParticleGun *gun = new PHG4ParticleGun();
-  gun->set_pid(2112);
+  gun->set_pid(2212);
   //gun->set_name("chargedgeantino");//positive charge!!
-  TVector3 gMom(0,0,25);
+  TVector3 gMom(0,0,250);
   gMom.RotateY(0.025);
   gun->set_vtx(0, 0, 0);
   gun->set_mom(gMom.X(), gMom.Y(), gMom.Z());
