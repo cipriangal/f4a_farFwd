@@ -251,12 +251,25 @@ void Fun4All_G4_IP6_hFarFwd(
 }
 
 void defineBeamPipe(PHG4Reco* g4Reco){
+  //exit window
+  PHG4CylinderSubsystem *exitWin = new PHG4CylinderSubsystem("exitWin",0);
+  pipeB0->set_double_param("radius"   ,3.2);
+  pipeB0->set_double_param("thickness",11.8);
+  pipeB0->set_double_param("length"   ,0.15);
+  pipeB0->set_double_param("rot_y"    ,0.025*TMath::RadToDeg());
+  pipeB0->set_string_param("material" ,"G4_STAINLESS-STEEL");
+  pipeB0->set_double_param("place_x"  ,12.5);
+  pipeB0->set_double_param("place_y"  ,0);
+  pipeB0->set_double_param("place_z"  ,500);
+  pipeB0->SetActive(false);
+  g4Reco->registerSubsystem(pipeB0);
+
   //B0 magnet pipe
   PHG4CylinderSubsystem *pipeB0 = new PHG4CylinderSubsystem("beamPipeB0",0);
   pipeB0->set_double_param("radius",2.8);
   pipeB0->set_double_param("thickness",0.25);
   pipeB0->set_double_param("length",195);
-  //pipeB0->set_double_param("rot_y",0.025*TMath::RadToDeg());
+  pipeB0->set_double_param("rot_y",0.025*TMath::RadToDeg());
   pipeB0->set_string_param("material","G4_Al");
   pipeB0->set_double_param("place_x",14.8);
   pipeB0->set_double_param("place_y",0);
@@ -279,7 +292,7 @@ void defineBeamPipe(PHG4Reco* g4Reco){
     pipe->set_double_param("radius",qir[i]);
     pipe->set_double_param("thickness",qor[i]-qir[i]);
     pipe->set_double_param("length",qlen[i]);
-    //pipe->set_double_param("rot_y",qrot[i]/1000*TMath::RadToDeg());
+    pipe->set_double_param("rot_y",qrot[i]/1000*TMath::RadToDeg());
     pipe->set_string_param("material","G4_Al");
     pipe->set_double_param("place_x",qxC[i]);
     pipe->set_double_param("place_y",qyC[i]);
@@ -293,7 +306,7 @@ void defineBeamPipe(PHG4Reco* g4Reco){
   pipeElectron->set_double_param("radius",1);
   pipeElectron->set_double_param("thickness",1);
   pipeElectron->set_double_param("length",3000);
-  //pipeElectron->set_double_param("rot_y",0.025*TMath::RadToDeg());
+  pipeElectron->set_double_param("rot_y",0.025*TMath::RadToDeg());
   pipeElectron->set_string_param("material","G4_Al");
   pipeElectron->set_double_param("place_x",0);
   pipeElectron->set_double_param("place_y",0);
@@ -306,7 +319,7 @@ void defineBeamPipe(PHG4Reco* g4Reco){
   pipeZDC->set_double_param("radius",16.5);
   pipeZDC->set_double_param("thickness",0.1);
   pipeZDC->set_double_param("length",170);
-  //pipeZDC->set_double_param("rot_y",0.025*TMath::RadToDeg());
+  pipeZDC->set_double_param("rot_y",0.025*TMath::RadToDeg());
   pipeZDC->set_string_param("material","G4_Al");
   pipeZDC->set_double_param("place_x",59);
   pipeZDC->set_double_param("place_y",0);
@@ -335,7 +348,7 @@ void defineBeamPipe(PHG4Reco* g4Reco){
     pipe->set_double_param("rmin2",ir2[i]);
     pipe->set_double_param("rmax1",or1[i]);
     pipe->set_double_param("rmax2",or2[i]);
-    //pipe->set_double_param("rot_y",0.027*TMath::RadToDeg());
+    pipe->set_double_param("rot_y",0.027*TMath::RadToDeg());
     g4Reco->registerSubsystem(pipe);
   }
 }
