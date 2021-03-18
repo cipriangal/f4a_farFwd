@@ -14,6 +14,8 @@
 #include <g4main/ReadEICFiles.h>
 #include <g4main/PHG4Reco.h>
 #include <g4main/PHG4TruthSubsystem.h>
+#include <g4detectors/PHG4CylinderSubsystem.h>
+#include <g4detectors/PHG4ConeSubsystem.h>
 #include <g4detectors/BeamLineMagnetSubsystem.h>
 #include <g4detectors/PHG4BlockSubsystem.h>
 #include <phool/recoConsts.h>
@@ -32,6 +34,7 @@ R__LOAD_LIBRARY(libCompton.so)
 #include <set>
 
 void defineDetectors(PHG4Reco*,int);
+void defineBeamPipe(PHG4Reco*);
 
 //bool verbose = true;
 bool verbose = false;
@@ -215,6 +218,8 @@ void Fun4All_G4_IP6_hFarFwd(
   const int trackingLevel = 1;
   defineDetectors(g4Reco, trackingLevel);
 
+  defineBeamPipe(g4Reco);
+
   if(verbose || nEvents<5)
     cout<<"World size: "<<g4Reco->GetWorldSizeX()<<" "<<g4Reco->GetWorldSizeY()<<" "<<g4Reco->GetWorldSizeZ()<<" "<<endl;
 
@@ -243,6 +248,96 @@ void Fun4All_G4_IP6_hFarFwd(
   se->End();
   delete se;
   gSystem->Exit(0);
+}
+
+void defineBeamPipe(PHG4Reco* g4Reco){
+  //B0 magnet pipe
+  PHG4CylinderSubsystem *pipeB0 = new PHG4CylinderSubsystem("beamPipeB0",0);
+  pipeB0->set_double_param("radius",2.8);
+  pipeB0->set_double_param("thickness",0.25);
+  pipeB0->set_double_param("length",195);
+  //pipeB0->set_double_param("rot_y",0.025*TMath::RadToDeg());
+  pipeB0->set_string_param("material","G4_Al");
+  pipeB0->set_double_param("place_x",14.8);
+  pipeB0->set_double_param("place_y",0);
+  pipeB0->set_double_param("place_z",590);
+  pipeB0->SetActive(false);
+  g4Reco->registerSubsystem(pipeB0);
+
+  //Quad pipes
+  const int nSecQ = 5; //B0apf, Q1apf, Q1bpf, Q2pf, B1pf
+  const string nm  [nSecQ]={"B0apf", "Q1apf", "Q1bpf", "Q2pf", "B1pf"};
+  const double qlen[nSecQ]={160    , 150    , 220    , 440   , 330   };
+  const double qir [nSecQ]={4      , 5.1    , 7      , 12    , 12.2  };
+  const double qor [nSecQ]={4.1    , 5.2    , 7.2    , 12.2  , 12.4  };
+  const double qrot[nSecQ]={25     , 19.5   , 15     , 100   , 100   };//mrad
+  const double qxC [nSecQ]={19.8   , 24.47  , 0      , 39.5  , 48    };
+  const double qyC [nSecQ]={0      , 0      , 30.05  , 0     , 0     };
+  const double qzC [nSecQ]={770    , 922.8  , 1106.3 , 1416.7, 1806.7};
+  for(int i=0;i<nSecQ;i++){
+    PHG4CylinderSubsystem *pipe = new PHG4CylinderSubsystem(Form("beamPipe%s",nm[i].c_str()),0);
+    pipe->set_double_param("radius",qir[i]);
+    pipe->set_double_param("thickness",qor[i]-qir[i]);
+    pipe->set_double_param("length",qlen[i]);
+    //pipe->set_double_param("rot_y",qrot[i]/1000*TMath::RadToDeg());
+    pipe->set_string_param("material","G4_Al");
+    pipe->set_double_param("place_x",qxC[i]);
+    pipe->set_double_param("place_y",qyC[i]);
+    pipe->set_double_param("place_z",qzC[i]);
+    pipe->SetActive(false);
+    g4Reco->registerSubsystem(pipe);
+  }
+
+  //Electron pipe
+  PHG4CylinderSubsystem *pipeElectron = new PHG4CylinderSubsystem("beamPipeElectron",0);
+  pipeElectron->set_double_param("radius",1);
+  pipeElectron->set_double_param("thickness",1);
+  pipeElectron->set_double_param("length",3000);
+  //pipeElectron->set_double_param("rot_y",0.025*TMath::RadToDeg());
+  pipeElectron->set_string_param("material","G4_Al");
+  pipeElectron->set_double_param("place_x",0);
+  pipeElectron->set_double_param("place_y",0);
+  pipeElectron->set_double_param("place_z",2000);
+  pipeElectron->SetActive(false);
+  g4Reco->registerSubsystem(pipeElectron);
+
+  //ZDC pipe
+  PHG4CylinderSubsystem *pipeZDC = new PHG4CylinderSubsystem("beamPipeZDC",0);
+  pipeZDC->set_double_param("radius",16.5);
+  pipeZDC->set_double_param("thickness",0.1);
+  pipeZDC->set_double_param("length",170);
+  //pipeZDC->set_double_param("rot_y",0.025*TMath::RadToDeg());
+  pipeZDC->set_string_param("material","G4_Al");
+  pipeZDC->set_double_param("place_x",59);
+  pipeZDC->set_double_param("place_y",0);
+  pipeZDC->set_double_param("place_z",2041.59);
+  pipeZDC->SetActive(false);
+  g4Reco->registerSubsystem(pipeZDC);
+
+  //Roman Pot pipe
+  const int nSec = 2;
+  const double len[nSec]={850,1150 };
+  const double ir1[nSec]={17  , 17 };
+  const double or1[nSec]={17.1,17.1};
+  const double ir2[nSec]={17  ,  7 };
+  const double or2[nSec]={17.1, 7.1};
+  const double xC[nSec] ={83  , 130};
+  const double yC[nSec] ={0   ,   0};
+  const double zC[nSec] ={2550,3550};
+  for(int i=0;i<nSec;i++){
+    PHG4ConeSubsystem *pipe = new PHG4ConeSubsystem(Form("beamPipeRP%d",i),0);
+    pipe->set_string_param("material","G4_STAINLESS-STEEL");
+    pipe->set_double_param("place_x",xC[i]);
+    pipe->set_double_param("place_y",yC[i]);
+    pipe->set_double_param("place_z",zC[i]);
+    pipe->set_double_param("length",len[i]);
+    pipe->set_double_param("rmin1",ir1[i]);
+    pipe->set_double_param("rmin2",ir2[i]);
+    pipe->set_double_param("rmax1",or1[i]);
+    pipe->set_double_param("rmax2",or2[i]);
+    //pipe->set_double_param("rot_y",0.027*TMath::RadToDeg());
+    g4Reco->registerSubsystem(pipe);
+  }
 }
 
 void defineDetectors(PHG4Reco* g4Reco, int trackLvl){
