@@ -62,7 +62,7 @@ void Fun4All_G4_IP6_hFarFwd(
   PHG4ParticleGun *gun = new PHG4ParticleGun();
   gun->set_pid(2212);
   //gun->set_name("chargedgeantino");//positive charge!!
-  TVector3 gMom(0,0,250);
+  TVector3 gMom(0,0,275);
   gMom.RotateY(0.025);
   gun->set_vtx(0, 0, 0);
   gun->set_mom(gMom.X(), gMom.Y(), gMom.Z());
@@ -219,7 +219,8 @@ void Fun4All_G4_IP6_hFarFwd(
   const int trackingLevel = 1;
   defineDetectors(g4Reco, trackingLevel);
 
-  defineBeamPipe(g4Reco);
+  // beampipe as used for initial EICroot analysis (is full of overlaps - use only as starting point)
+  //defineBeamPipe(g4Reco);
 
   if(verbose || nEvents<5)
     cout<<"World size: "<<g4Reco->GetWorldSizeX()<<" "<<g4Reco->GetWorldSizeY()<<" "<<g4Reco->GetWorldSizeZ()<<" "<<endl;
@@ -250,6 +251,61 @@ void Fun4All_G4_IP6_hFarFwd(
   delete se;
   gSystem->Exit(0);
 }
+
+void defineDetectors(PHG4Reco* g4Reco, int trackLvl){
+
+  auto *detZDC = new PHG4BlockSubsystem("zdcTruth");
+  detZDC->set_double_param("place_x",96.24);
+  detZDC->set_double_param("place_y",0);
+  detZDC->set_double_param("place_z",3750);
+  detZDC->set_double_param("rot_y",-0.025*TMath::RadToDeg());
+  detZDC->set_double_param("size_x",60);
+  detZDC->set_double_param("size_y",60);
+  detZDC->set_double_param("size_z",0.03);
+  detZDC->set_string_param("material","G4_Galactic");
+  detZDC->SetActive();
+  if(verbose)
+    detZDC->Verbosity(4);
+  g4Reco->registerSubsystem(detZDC);
+ 
+  const int rpDetNr = 2;
+  const double rp_zCent[rpDetNr]={2600  ,2800};
+  const double rp_xCent[rpDetNr]={84.49 ,93.59};
+  for(int i=0;i<rpDetNr;i++){
+    auto *detRP = new PHG4BlockSubsystem(Form("rpTruth_%d",i));
+    detRP->set_double_param("place_x",rp_xCent[i]);
+    detRP->set_double_param("place_y",0);
+    detRP->set_double_param("place_z",rp_zCent[i]);
+    detRP->set_double_param("rot_y",-0.025*TMath::RadToDeg());
+    detRP->set_double_param("size_x",25);
+    detRP->set_double_param("size_y",10);
+    detRP->set_double_param("size_z",0.03);
+    detRP->set_string_param("material","G4_Si");
+    detRP->SetActive();
+    if(verbose)
+      detRP->Verbosity(4);
+    g4Reco->registerSubsystem(detRP);
+  }
+
+  const int b0DetNr = 4;
+  const double b0Mag_zCent = 590;
+  const double b0Mag_zLen = 120;
+  for(int i=0;i<b0DetNr;i++){
+    auto *detB0 = new PHG4CylinderSubsystem(Form("b0Truth_%d",i),0);
+    detB0->set_double_param("radius",3.7);
+    detB0->set_double_param("thickness",20 - 3.7);
+    detB0->set_double_param("length",0.1);
+    detB0->set_string_param("material","G4_Si");
+    detB0->set_double_param("place_x",13.2);
+    detB0->set_double_param("place_y",0);
+    detB0->set_double_param("place_z", (b0Mag_zCent - b0Mag_zLen/2) + b0Mag_zLen/(b0DetNr-1) * i);
+    detB0->SetActive(true);
+    g4Reco->registerSubsystem(detB0);
+  }
+ 
+  
+}
+
 
 void defineBeamPipe(PHG4Reco* g4Reco){
   //exit window
@@ -352,137 +408,4 @@ void defineBeamPipe(PHG4Reco* g4Reco){
     pipe->set_double_param("rot_y",-0.027*TMath::RadToDeg());
     g4Reco->registerSubsystem(pipe);
   }
-}
-
-void defineDetectors(PHG4Reco* g4Reco, int trackLvl){
-
-  auto *detZDC = new ComptonTruthSubsystem("zdc");
-  detZDC->set_double_param("place_x",96.24);
-  detZDC->set_double_param("place_y",0);
-  detZDC->set_double_param("place_z",3800-50);
-  detZDC->set_double_param("size_x",60);
-  detZDC->set_double_param("size_y",60);
-  detZDC->set_double_param("size_z",0.1);
-  detZDC->set_string_param("material","G4_Galactic");
-  detZDC->SetActive();
-  if(verbose)
-    detZDC->Verbosity(4);
-  detZDC->SetTrackingLevel(trackLvl);
-  g4Reco->registerSubsystem(detZDC);
-
-
-  /*
-  //Simple flat detector
-  auto *genDet = new ComptonTruthSubsystem("gen");
-  genDet->set_double_param("place_x",0);
-  genDet->set_double_param("place_y",0);
-  genDet->set_double_param("place_z",-5);
-  genDet->set_double_param("size_x",100);
-  genDet->set_double_param("size_y",100);
-  genDet->set_double_param("size_z",0.1);
-  genDet->set_string_param("material","G4_Galactic");
-  genDet->SetActive();
-  if(verbose  || (nEvents<5 && nEvents>0))
-    genDet->Verbosity(4);
-  genDet->SetTrackingLevel(trackingLevel);
-  g4Reco->registerSubsystem(genDet);
-
-  auto *dipoleExitDet = new ComptonTruthSubsystem("dExit");
-  dipoleExitDet->set_double_param("place_x",0);
-  dipoleExitDet->set_double_param("place_y",0);
-  dipoleExitDet->set_double_param("place_z",-500);
-  dipoleExitDet->set_double_param("size_x",100);
-  dipoleExitDet->set_double_param("size_y",100);
-  dipoleExitDet->set_double_param("size_z",0.1);
-  dipoleExitDet->set_string_param("material","G4_Galactic");
-  dipoleExitDet->SetActive();
-  if(verbose  || (nEvents<5 && nEvents>0))
-    dipoleExitDet->Verbosity(4);
-  dipoleExitDet->SetTrackingLevel(trackingLevel);
-  g4Reco->registerSubsystem(dipoleExitDet);
-
-  auto *qf11ExitDet = new ComptonTruthSubsystem("qf11Exit");
-  qf11ExitDet->set_double_param("place_x",0);
-  qf11ExitDet->set_double_param("place_y",0);
-  qf11ExitDet->set_double_param("place_z",-650);
-  qf11ExitDet->set_double_param("size_x",100);
-  qf11ExitDet->set_double_param("size_y",100);
-  qf11ExitDet->set_double_param("size_z",0.1);
-  qf11ExitDet->set_string_param("material","G4_Galactic");
-  qf11ExitDet->SetActive();
-  if(verbose  || (nEvents<5 && nEvents>0))
-    qf11ExitDet->Verbosity(4);
-  qf11ExitDet->SetTrackingLevel(trackingLevel);
-  g4Reco->registerSubsystem(qf11ExitDet);
-
-  auto *qd10EntranceDet = new ComptonTruthSubsystem("qd10Enter");
-  qd10EntranceDet->set_double_param("place_x",0);
-  qd10EntranceDet->set_double_param("place_y",0);
-  qd10EntranceDet->set_double_param("place_z",-1600);
-  qd10EntranceDet->set_double_param("size_x",100);
-  qd10EntranceDet->set_double_param("size_y",100);
-  qd10EntranceDet->set_double_param("size_z",0.1);
-  qd10EntranceDet->set_string_param("material","G4_Galactic");
-  qd10EntranceDet->SetActive();
-  if(verbose  || (nEvents<5 && nEvents>0))
-    qd10EntranceDet->Verbosity(4);
-  qd10EntranceDet->SetTrackingLevel(trackingLevel);
-  g4Reco->registerSubsystem(qd10EntranceDet);
-
-  auto *qd10ExitDet = new ComptonTruthSubsystem("qd10Exit");
-  qd10ExitDet->set_double_param("place_x",0);
-  qd10ExitDet->set_double_param("place_y",0);
-  qd10ExitDet->set_double_param("place_z",-1670);
-  qd10ExitDet->set_double_param("size_x",100);
-  qd10ExitDet->set_double_param("size_y",100);
-  qd10ExitDet->set_double_param("size_z",0.1);
-  qd10ExitDet->set_string_param("material","G4_Galactic");
-  qd10ExitDet->SetActive();
-  if(verbose  || (nEvents<5 && nEvents>0))
-    qd10ExitDet->Verbosity(4);
-  qd10ExitDet->SetTrackingLevel(trackingLevel);
-  g4Reco->registerSubsystem(qd10ExitDet);
-
-  auto *det25m = new ComptonTruthSubsystem("det25m");
-  det25m->set_double_param("place_x",0);
-  det25m->set_double_param("place_y",0);
-  det25m->set_double_param("place_z",-2500);
-  det25m->set_double_param("size_x",100);
-  det25m->set_double_param("size_y",100);
-  det25m->set_double_param("size_z",0.1);
-  det25m->set_string_param("material","G4_Galactic");
-  det25m->SetActive();
-  if(verbose  || (nEvents<5 && nEvents>0))
-    det25m->Verbosity(4);
-  det25m->SetTrackingLevel(trackingLevel);
-  g4Reco->registerSubsystem(det25m);
-
-  auto *qf9EntranceDet = new ComptonTruthSubsystem("qf9Enter");
-  qf9EntranceDet->set_double_param("place_x",0);
-  qf9EntranceDet->set_double_param("place_y",0);
-  qf9EntranceDet->set_double_param("place_z",-2700);
-  qf9EntranceDet->set_double_param("size_x",100);
-  qf9EntranceDet->set_double_param("size_y",100);
-  qf9EntranceDet->set_double_param("size_z",0.1);
-  qf9EntranceDet->set_string_param("material","G4_Galactic");
-  qf9EntranceDet->SetActive();
-  if(verbose  || (nEvents<5 && nEvents>0))
-    qf9EntranceDet->Verbosity(4);
-  qf9EntranceDet->SetTrackingLevel(trackingLevel);
-  g4Reco->registerSubsystem(qf9EntranceDet);
-
-  auto *qf9ExitDet = new ComptonTruthSubsystem("qf9Exit");
-  qf9ExitDet->set_double_param("place_x",0);
-  qf9ExitDet->set_double_param("place_y",0);
-  qf9ExitDet->set_double_param("place_z",-2765);
-  qf9ExitDet->set_double_param("size_x",100);
-  qf9ExitDet->set_double_param("size_y",100);
-  qf9ExitDet->set_double_param("size_z",0.1);
-  qf9ExitDet->set_string_param("material","G4_Galactic");
-  qf9ExitDet->SetActive();
-  if(verbose  || (nEvents<5 && nEvents>0))
-    qf9ExitDet->Verbosity(4);
-  qf9ExitDet->SetTrackingLevel(trackingLevel);
-  g4Reco->registerSubsystem(qf9ExitDet);
-  */
 }
