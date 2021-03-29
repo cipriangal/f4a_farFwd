@@ -63,7 +63,7 @@ void Fun4All_G4_IP6_hFarFwd(
   gun->set_pid(2212);
   //gun->set_name("chargedgeantino");//positive charge!!
   TVector3 gMom(0,0,275);
-  gMom.RotateY(0.025);
+  gMom.RotateY(0.035);
   gun->set_vtx(0, 0, 0);
   gun->set_mom(gMom.X(), gMom.Y(), gMom.Z());
 
@@ -95,7 +95,8 @@ void Fun4All_G4_IP6_hFarFwd(
   g4Reco->SetWorldMaterial("G4_Galactic");
 
   BeamLineMagnetSubsystem *bl = nullptr;
-  std::ifstream infile("ip6_h_farFwdBeamline.dat");
+  //std::ifstream infile("ip6_h_farFwdBeamline.dat");
+  std::ifstream infile("ip8_35mrad_h_farFwdBeamLineMagnets.dat");
   if (infile.is_open())
     {
       double biggest_z = 0.;
@@ -213,11 +214,11 @@ void Fun4All_G4_IP6_hFarFwd(
 	  g4Reco->SetWorldSizeZ((biggest_z+100.)*2); // leave 1m on both sides
 	}
     }
-  g4Reco->SetWorldSizeZ(4500*2); //in cm
+  g4Reco->SetWorldSizeZ(5000*2); //in cm
 
   //1=primaries only (trackID 1,2); 0=all particles
   const int trackingLevel = 1;
-  defineDetectors(g4Reco, trackingLevel);
+  //defineDetectors(g4Reco, trackingLevel);
 
   // beampipe as used for initial EICroot analysis (is full of overlaps - use only as starting point)
   //defineBeamPipe(g4Reco);
